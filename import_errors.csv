@@ -1,0 +1,4 @@
+line,error,row
+6,Roll_No missing or blank,"{'Roll_No': nan, 'Name': 'Bad Age', 'Age': 30, 'Mid1_Marks': -1, 'Mid2_Marks': 85, 'Quiz_Marks': 79, 'Final_Marks': 90, 'Attendance_%': '85'}"
+7,Duplicate Roll_No in import file,"{'Roll_No': 14.0, 'Name': 'Harshini', 'Age': 18, 'Mid1_Marks': 21, 'Mid2_Marks': -10, 'Quiz_Marks': 80, 'Final_Marks': 85, 'Attendance_%': '90'}"
+8,Name missing or blank,"{'Roll_No': 17.0, 'Name': nan, 'Age': 19, 'Mid1_Marks': 20, 'Mid2_Marks': 75, 'Quiz_Marks': 78, 'Final_Marks': 80, 'Attendance_%': '77a'}"

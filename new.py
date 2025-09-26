@@ -15,6 +15,7 @@ def add_student():
         roll_no=int(input("Enter a roll no: "))
         if roll_no<=0:
             raise ValueError("Negative roll number is not allowed.")
+            return df
         elif roll_no in df["Roll_No"].values:
             print("Roll number rejected.") 
             return df
@@ -27,6 +28,7 @@ def add_student():
     gender=input("Enter gender: ")
     age=int(input("Enter age: "))
     attendance=float(input("Enter attendance-%: "))
+    
     if not (0<=attendance<=100):
         print("Attendance must be 0-100.")
         return 
@@ -64,6 +66,14 @@ def search_student():
     global df
     input_value=input("Enter Roll No or Name to search: ")
     if input_value.isdigit():
+        try:
+            roll_no=int(input_value)
+            if roll_no<=0:
+                raise ValueError("Negative roll number is not allowed.")
+                return df
+        except ValueError:
+            print("Roll number is not valid.")
+            return df
         mask=df["Roll_No"]==int(input_value)
         result=df[mask]
         print(result)
@@ -72,7 +82,14 @@ def search_student():
         print(result)
 def update_student():
     global df
-    roll_no=int(input("Enter roll no to update: "))
+    try:
+        roll_no=int(input("Enter a roll no to update: "))
+        if roll_no<=0:
+            raise ValueError("Negative roll number is not allowed.")
+            return df
+    except ValueError:
+        print("Roll number is not valid.")
+        return df
     if roll_no in df["Roll_No"].values:
         choice=input("Enter field to update(marks,attendance): ").strip().lower()
         if choice=="marks":
@@ -105,7 +122,7 @@ def update_student():
         print("Roll number not found.")
 def delete_student():
     global df
-    roll_no=int(input("Enter the roll number: "))
+    roll_no=int(input("Enter a roll no: "))
     if roll_no not in df["Roll_No"].values:
         print(f"Roll No {roll_no} not found.")
         return df
@@ -148,7 +165,7 @@ def generate_report():
     print(f"Total Students : {total_students}")
     print(f"Class Average  : {class_avg:.2f}")
     print("Highest Scorer : ",class_df.loc[highest_scorer,"Name"])
-    print(f"Lowest Scorer  : ",class_df.loc[lowest_scorer,"Name"])
+    print("Lowest Scorer  : ",class_df.loc[lowest_scorer,"Name"])
     print("Grade Distribution : ")
     for grade, count in grade_distribution.items():
         print(f"{grade}→{count} students")
@@ -167,14 +184,52 @@ def generate_report():
         pd.DataFrame(report).to_csv(report_filename, index=False)
         print(f"Report exported to {report_filename}")
     return class_df
+def bulk_import():
+    global df
+    import_errors="import_errors.csv"
+    new_file="new_students.csv"
+    if not os.path.exists(new_file):
+        print("File not found")
+    else:
+        df=pd.read_csv(new_file,encoding="utf-8",on_bad_lines='skip')
+    errors=[]
+    dup_mask=df['Roll_No'].duplicated(keep='first')
+    valid_rows=[]
+    #existing_rolls=set()
+    for idx,row in df.iterrows():
+        line_no=idx+2  
+        roll=row.get('Roll_No')
+        name=row.get('Name')
+        if pd.isna(roll) or str(roll).strip() == "":
+            errors.append({"line": line_no, "error": "Roll_No missing or blank", "row": row.to_dict()})
+            continue
+        if dup_mask.iloc[idx]:
+            errors.append({"line": line_no, "error": "Duplicate Roll_No in import file", "row": row.to_dict()})
+            continue
+        if pd.isna(name) or str(name).strip() == "":
+            errors.append({"line": line_no, "error": "Name missing or blank", "row": row.to_dict()})
+            continue
+        valid_rows.append(row.to_dict())
+        #existing_rolls.add(str(roll).strip())
+    valid_df=pd.DataFrame(valid_rows)
+    error_df=pd.DataFrame(errors)
+    if not error_df.empty:
+        error_df.to_csv(import_errors,index=False)
+    print("Valid rows to import:")
+    print(valid_df)
+    print("Error rows (see import_errors.csv):")
+    print(error_df)
 def sort():
     file_name="sorted_students.csv"
-    choice=input("Enter marks or attendance").strip().lower()
+    choice=input("Enter marks or attendance:").strip().lower()
     if choice=="marks":
         sorted_marks=df.sort_values("Final_Marks",ascending=False)
+        print("The sorted order of final marks: ",sorted_marks)
         sorted_marks.to_csv(file_name,index=False)
     elif choice=="attendance":
-        filtered_attendance=df.sort_values("Attendance_%",ascending=False)
+        threshold_value=int(input("Enter the threshold vaue: "))
+        filtered_attendance=df[df["Attendance_%"]<threshold_value]
+        print("The filtered students by attendance: ",filtered_attendance)
         filtered_attendance.to_csv(file_name,index=False)
     else:
         print("Invalid choice")
@@ -187,7 +242,8 @@ def main():
         print("4.Delete Student")
         print("5.Summarized Report")
         print("6.Sorting")
-        print("7.Exit")
+        print("7.Bulk import")
+        print("8.Exit")
         choice=int(input("Enter option: "))
         match choice:
             case 1:
@@ -202,6 +258,8 @@ def main():
                 generate_report()
             case 6:
                 sort()
+            case 7:
+                bulk_import()
             case _:
                 print("Invalid choice.")
 if __name__ == "__main__":
