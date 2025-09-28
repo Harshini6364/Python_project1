@@ -28,7 +28,6 @@ def add_student():
     gender=input("Enter gender: ")
     age=int(input("Enter age: "))
     attendance=float(input("Enter attendance-%: "))
-    
     if not (0<=attendance<=100):
         print("Attendance must be 0-100.")
         return 
@@ -138,11 +137,11 @@ def delete_student():
     deleted_record.to_csv(deleted_file,index=False)
     print(f"Deleted record moved to {deleted_file}.")
 def assign_grade(marks):
-    if marks>=60:
+    if marks>=60 and marks<=70:
         return "A"
-    elif marks>=50:
+    elif marks>=50 and marks<60:
         return "B"
-    elif marks>=40:
+    elif marks>=40 and marks<50:
         return "C"
     else:
         return "D"
@@ -161,7 +160,7 @@ def generate_report():
     grade_distribution=class_df["Grade"].value_counts().to_dict()
     print("Parent-Teacher Meeting Report")
     print(f"Branch: {branch}, Year: {year}")
-    print("-"*40)
+    print("-"*110)
     print(f"Total Students : {total_students}")
     print(f"Class Average  : {class_avg:.2f}")
     print("Highest Scorer : ",class_df.loc[highest_scorer,"Name"])
@@ -195,7 +194,6 @@ def bulk_import():
     errors=[]
     dup_mask=df['Roll_No'].duplicated(keep='first')
     valid_rows=[]
-    #existing_rolls=set()
     for idx,row in df.iterrows():
         line_no=idx+2  
         roll=row.get('Roll_No')
@@ -210,7 +208,6 @@ def bulk_import():
             errors.append({"line": line_no, "error": "Name missing or blank", "row": row.to_dict()})
             continue
         valid_rows.append(row.to_dict())
-        #existing_rolls.add(str(roll).strip())
     valid_df=pd.DataFrame(valid_rows)
     error_df=pd.DataFrame(errors)
     if not error_df.empty:
